@@ -186,7 +186,8 @@ VS.ui.SearchBox = Backbone.View.extend({
 
   // Add a new facet. Facet will be focused and ready to accept a value. Can also
   // specify position, in the case of adding facets from an inbetween input.
-  addFacet : function(category, initialQuery, position) {
+  addFacet : function(category, initialQuery, position, options) {
+    options      = options || {};
     category     = VS.utils.inflector.trim(category);
     initialQuery = VS.utils.inflector.trim(initialQuery || '');
     if (!category) return;
@@ -196,18 +197,25 @@ VS.ui.SearchBox = Backbone.View.extend({
       value    : initialQuery || '',
       app      : this.app
     });
-    this.app.searchQuery.add(model, {at: position});
+    this.app.searchQuery.add(model, $.extend({at: position}, options));
   },
 
   // Renders a newly added facet, and selects it.
-  addedFacet : function (model) {
+  addedFacet : function (model, collection, options) {
+    options = options || {};
     this.renderFacets();
-    var facetView = _.detect(this.facetViews, function(view) {
-      if (view.model == model) return true;
-    });
+    var view;
+    if (options.skipEdit) {
+      this.searchEvent();
+      view = this.inputViews[this.inputViews.length-1];
+    } else {
+      view = _.detect(this.facetViews, function(view) {
+        if (view.model == model) return true;
+      });
+    }
 
     _.defer(function() {
-      facetView.enableEdit();
+      view.enableEdit();
     });
   },
 
@@ -440,7 +448,7 @@ VS.ui.SearchBox = Backbone.View.extend({
     var view = this.inputViews[this.inputViews.length-1];
     view.enableEdit(selectText);
     if (!selectText) view.setCursorAtEnd(-1);
-    if (e.type == 'keydown') {
+    if (e && e.type == 'keydown') {
       view.keydown(e);
       view.box.trigger('keydown');
     }
@@ -995,7 +1003,12 @@ VS.ui.SearchInput = Backbone.View.extend({
         e.stopPropagation();
         //var remainder = this.addTextFacetRemainder(ui.item.value);
         var position  = this.options.position; // + (remainder ? 1 : 0);
-        this.app.searchBox.addFacet(ui.item instanceof String ? ui.item : ui.item.value, '', position);
+        if (ui.item instanceof String) {
+          this.app.searchBox.addFacet(ui.item, '', position);
+        } else {
+          var preselectedValue = ui.item.initialValue && (ui.item.initialValue.label || ui.item.initialValue) || '';
+          this.app.searchBox.addFacet(ui.item.value, preselectedValue, position, {skipEdit: preselectedValue.length > 0});
+        }
         return false;
       }, this)
     });
@@ -1029,7 +1042,7 @@ VS.ui.SearchInput = Backbone.View.extend({
 
       // Only match from the beginning of the word.
       var matcher    = new RegExp('^' + re, 'i');
-      var matches    = $.grep(prefixes, function(item) {
+      var matches    = options.noGrep ? prefixes : $.grep(prefixes, function(item) {
         return item && matcher.test(item.label || item);
       });
 
@@ -1041,7 +1054,7 @@ VS.ui.SearchInput = Backbone.View.extend({
           else             return match;
         }));
       }
-    });
+    }, searchTerm);
 
   },
 
