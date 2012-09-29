@@ -138,6 +138,7 @@
   <script src="lib/js/views/search_input.js" type="text/javascript" charset="utf-8"></script>
   <script src="lib/js/models/search_facets.js" type="text/javascript" charset="utf-8"></script>
   <script src="lib/js/models/search_query.js" type="text/javascript" charset="utf-8"></script>
+  <script src="lib/js/parser/grammar_parser.js" type="text/javascript" charset="utf-8"></script>
   <script src="lib/js/utils/backbone_extensions.js" type="text/javascript" charset="utf-8"></script>
   <script src="lib/js/utils/hotkeys.js" type="text/javascript" charset="utf-8"></script>
   <script src="lib/js/utils/jquery_extensions.js" type="text/javascript" charset="utf-8"></script>
@@ -278,7 +279,7 @@
             };
         window.visualSearch = VS.init({
           container  : $('#search_box_container'),
-          query      : 'country: "South Africa" account: 5-samuel "U.S. State": California',
+          query      : 'country: "South Africa" account: Samuel(5-samuel) "U.S. State": California',
           showFacets : true,
           unquotable : [
             'text',
