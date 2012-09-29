@@ -2114,6 +2114,7 @@ VS.utils.inflector = {
 
   // Delegate to the ECMA5 String.prototype.trim function, if available.
   trim : function(s) {
+    s = s || '';
     return s.trim ? s.trim() : s.replace(/^\s+|\s+$/g, '');
   },
   
