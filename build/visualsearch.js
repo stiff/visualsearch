@@ -44,6 +44,9 @@
     };
     this.options           = _.extend({}, defaults, options);
     this.options.callbacks = _.extend({}, defaults.callbacks, options.callbacks);
+    _.each(_.functions(this.options.callbacks), _.bind(function(f) {
+      this.options.callbacks[f] = _.bind(this.options.callbacks[f], this);
+    }, this));
     
     VS.app.hotkeys.initialize();
     this.searchQuery   = new VS.model.SearchQuery();
@@ -2114,7 +2117,7 @@ VS.utils.inflector = {
 
   // Delegate to the ECMA5 String.prototype.trim function, if available.
   trim : function(s) {
-    s = s || '';
+    s = (s && s.toString()) || '';
     return s.trim ? s.trim() : s.replace(/^\s+|\s+$/g, '');
   },
   
